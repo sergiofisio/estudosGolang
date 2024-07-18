@@ -10,9 +10,13 @@ import (
 	"webserver/database"
 	// "webserver/middleware"
 
+	"github.com/fatih/color"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/prest/config"
+	"github.com/prest/middlewares"
+	"github.com/urfave/negroni"
 
 )
 
@@ -27,10 +31,39 @@ func logRequestMiddleware() gin.HandlerFunc {
     }
 }
 
+var (
+	pgUser     string
+	pgHost     string
+	pgPass     string
+	pgDatabase string
+	port       string
+	sslMode    string
+
+	sentryDSN string
+
+	profile string
+)
+
+const AppVersion = "0.1.14"
+
+func init() {
+	fmt.Println("--------------------")
+	fmt.Println(AppVersion)
+	fmt.Println("--------------------")
+
+	err := godotenv.Load()
+	if err != nil {
+		color.Yellow("Error loading .env file")
+		log.Println(err)
+	}
+	pgUser = os.Getenv("PG_USER")
+	pgHost = os.Getenv("PG_HOST")
+	pgPass = os.Getenv("PG_PASS")
+	pgDatabase = os.Getenv("PG_DATABASE")
+	port = os.Getenv("PORT")
+}
+
 func main() {
-    if err := godotenv.Load(); err != nil {
-        log.Fatal("Erro carregando .env")
-    }
 
     connStr := "user=postgres.okeyrotrinjopdjpupym password=BioCasa7735 host=aws-0-sa-east-1.pooler.supabase.com port=5432 dbname=postgres"
 
@@ -41,17 +74,19 @@ func main() {
     }
     // defer db.Close()
 
-    // err = db.Ping()
-    // if err != nil {
-    //     log.Fatal("Erro ao conectar ao banco de dados:", err)
-    // }
+    err = db.Ping()
+    if err != nil {
+        log.Fatal("Erro ao conectar ao banco de dados:", err)
+    }
 
-    port := os.Getenv("PORT")
     if port == "" {
         port = "4000"
     }
 
     database.CreateTables(db)
+
+    n := negroni.Classic()
+	n.Use(middlewares.Cors(config.PrestConf.CORSAllowOrigin, config.PrestConf.CORSAllowHeaders))
 
     r := gin.Default()
     r.Use(logRequestMiddleware())
@@ -80,8 +115,5 @@ func main() {
     //     })
     // }
 
-    fmt.Printf("Servidor iniciado na porta %s...\n", port)
-    if err := r.Run(":" + port); err != nil {
-        log.Fatal(err)
-    }
+    color.Yellow("Servidor iniciado na porta %s...\n", port)
 }
