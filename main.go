@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"webserver/controller"
-	"webserver/database"
 
+	// "webserver/controller"
+	// "webserver/database"
 	// "webserver/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -32,31 +32,31 @@ func main() {
         log.Fatal("Erro carregando .env")
     }
 
-    connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
-    os.Getenv("DB_USER"),
-    os.Getenv("DB_PASSWORD"),
-    os.Getenv("DB_HOST"),
-    os.Getenv("DB_PORT"),
-    os.Getenv("DB_NAME"))
+    // connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
+    // os.Getenv("DB_USER"),
+    // os.Getenv("DB_PASSWORD"),
+    // os.Getenv("DB_HOST"),
+    // os.Getenv("DB_PORT"),
+    // os.Getenv("DB_NAME"))
 
-    var err error
-    db, err = sql.Open("postgres", connStr)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
+    // var err error
+    // db, err = sql.Open("postgres", connStr)
+    // if err != nil {
+    //     log.Fatal(err)
+    // }
+    // defer db.Close()
 
-    err = db.Ping()
-    if err != nil {
-        log.Fatal("Erro ao conectar ao banco de dados:", err)
-    }
+    // err = db.Ping()
+    // if err != nil {
+    //     log.Fatal("Erro ao conectar ao banco de dados:", err)
+    // }
 
     port := os.Getenv("PORT")
     if port == "" {
         port = "4000"
     }
 
-    database.CreateTables(db)
+    // database.CreateTables(db)
 
     r := gin.Default()
     r.Use(logRequestMiddleware())
@@ -65,9 +65,9 @@ func main() {
         c.String(http.StatusOK, "Servidor Iniciado")
     })
 
-    r.POST("/register", func(c *gin.Context) {
-        controller.RegisterHandler(c.Writer, c.Request, db)
-    })
+    // r.POST("/register", func(c *gin.Context) {
+    //     controller.RegisterHandler(c.Writer, c.Request, db)
+    // })
 
     // r.POST("/login", func(c *gin.Context) {
     //     controller.LoginHandler(c.Writer, c.Request, db)
