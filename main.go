@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	// "webserver/controller"
 	"webserver/database"
 	// "webserver/middleware"
@@ -13,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	// "github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-
 )
 
 var db *sql.DB
@@ -32,19 +32,14 @@ func main() {
     //     log.Fatal("Erro carregando .env")
     // }
 
-    connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
-    os.Getenv("DB_USER"),
-    os.Getenv("DB_PASSWORD"),
-    os.Getenv("DB_HOST"),
-    os.Getenv("DB_PORT"),
-    os.Getenv("DB_NAME"))
+    connStr := "user=postgres.okeyrotrinjopdjpupym password=BioCasa7735 host=aws-0-sa-east-1.pooler.supabase.com port=5432 dbname=postgres"
 
     var err error
     db, err = sql.Open("postgres", connStr)
     if err != nil {
         log.Fatal(err)
     }
-    defer db.Close()
+    // defer db.Close()
 
     // err = db.Ping()
     // if err != nil {
