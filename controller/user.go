@@ -13,6 +13,7 @@ import (
 	"github.com/sergiofisio/estudosGolang/function"
 	"github.com/sergiofisio/estudosGolang/models"
 	"golang.org/x/crypto/bcrypt"
+
 )
 
 func setupLogger() {
@@ -179,7 +180,6 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
         return
     }
 
-    // Executa a operação de delete no banco de dados
     query := `DELETE FROM users WHERE id = $1;`
     result, err := db.Exec(query, userID)
     if err != nil {
@@ -198,7 +198,6 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
         return
     }
 
-    // Retorna sucesso
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("Usuário deletado com sucesso"))
 }

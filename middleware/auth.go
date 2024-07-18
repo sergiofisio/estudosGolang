@@ -1,20 +1,21 @@
 package middleware
 
 import (
-	"fmt"
-	"net/http"
-	"os"
-	"strings"
+    "fmt"
+    "net/http"
+    "os"
+    "strings"
 
-	"github.com/dgrijalva/jwt-go"
+    "github.com/dgrijalva/jwt-go"
+    "github.com/gin-gonic/gin"
+
 )
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
 
-func Authenticate(next http.HandlerFunc) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        tokenString := r.Header.Get("Authorization")
-        print(tokenString)
+func Authenticate() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        tokenString := c.GetHeader("Authorization")
         tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
         token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -25,10 +26,10 @@ func Authenticate(next http.HandlerFunc) http.HandlerFunc {
         })
 
         if err != nil || !token.Valid {
-            http.Error(w, "Token inválido ou não fornecido", http.StatusUnauthorized)
+            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token inválido ou não fornecido"})
             return
         }
 
-        next.ServeHTTP(w, r)
+        c.Next()
     }
 }
