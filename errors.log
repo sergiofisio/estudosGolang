@@ -1,0 +1,13 @@
+2024/07/11 15:50:37 user.go:29: [LoginHandler] Usuário não encontrado: sql: no rows in result set
+2024/07/17 16:49:27 functions.go:21: Erro ao inserir o usuário no banco de dados: pq: duplicar valor da chave viola a restrição de unicidade "users_email_key"
+2024/07/17 16:49:27 functions.go:29: [RegisterHandler] Erro ao salvar o usuário no banco de dados: pq: duplicar valor da chave viola a restrição de unicidade "users_email_key"
+2024/07/17 16:49:32 functions.go:21: Erro ao inserir o usuário no banco de dados: pq: duplicar valor da chave viola a restrição de unicidade "users_email_key"
+2024/07/17 16:49:32 functions.go:29: [RegisterHandler] Erro ao salvar o usuário no banco de dados: pq: duplicar valor da chave viola a restrição de unicidade "users_email_key"
+2024/07/18 08:56:18 functions.go:29: [LoginHandler] Usuário não encontrado: sql: no rows in result set
+2024/07/18 09:06:08 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
+2024/07/18 09:06:53 main.go:79: listen tcp :8080: bind: Normalmente é permitida apenas uma utilização de cada endereço de soquete (protocolo/endereço de rede/porta).
+2024/07/18 09:07:50 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
+2024/07/18 09:08:18 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
+2024/07/18 09:09:04 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
+2024/07/18 09:12:47 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
+2024/07/18 09:14:59 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
