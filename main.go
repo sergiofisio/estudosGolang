@@ -32,7 +32,7 @@ func main() {
         log.Fatal("Erro carregando .env")
     }
 
-    connStr := databaseInfo
+    connStr := "user=postgres.okeyrotrinjopdjpupym password=BioCasa7735 host=aws-0-sa-east-1.pooler.supabase.com port=6543 dbname=postgres"
     var err error
     db, err = sql.Open("postgres", connStr)
     if err != nil {

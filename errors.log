@@ -11,3 +11,5 @@
 2024/07/18 09:09:04 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
 2024/07/18 09:12:47 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
 2024/07/18 09:14:59 functions.go:29: [UpdateHandler] Erro ao atualizar o usuário no banco de dados: pq: erro de sintaxe em ou próximo a "="
+2024/07/18 10:27:22 main.go:45: Erro ao conectar ao banco de dados:dial tcp [::1]:5432: connectex: Nenhuma conexão pôde ser feita porque a máquina de destino as recusou ativamente.
+2024/07/18 10:27:41 main.go:45: Erro ao conectar ao banco de dados:dial tcp [::1]:5432: connectex: Nenhuma conexão pôde ser feita porque a máquina de destino as recusou ativamente.
