@@ -1,11 +1,10 @@
-package main
+package database
 
 import (
 	"database/sql"
 	"log"
 )
 
-// CreateTables cria as tabelas necessárias no banco de dados
 func CreateTables(db *sql.DB) {
     createTablesSQL := `
     CREATE TABLE IF NOT EXISTS users (

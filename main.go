@@ -11,6 +11,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sergiofisio/estudosGolang/controller"
+	"github.com/sergiofisio/estudosGolang/database"
 	"github.com/sergiofisio/estudosGolang/middleware"
 )
 
@@ -30,7 +31,7 @@ func main() {
         log.Fatal("Erro carregando .env")
     }
 
-    connStr := "user=postgres password=123456 dbname=golang host=localhost port=5434 sslmode=disable"
+    connStr := "user=postgres.okeyrotrinjopdjpupym password=BioCasa7735 host=aws-0-sa-east-1.pooler.supabase.com port=6543 dbname=postgres"
     var err error
     db, err = sql.Open("postgres", connStr)
     if err != nil {
@@ -48,7 +49,7 @@ func main() {
         port = "4000"
     }
 
-    CreateTables(db)
+    database.CreateTables(db)
 
     r := mux.NewRouter()
 
