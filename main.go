@@ -6,14 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
-
 	// "webserver/controller"
 	"webserver/database"
 	// "webserver/middleware"
 
 	"github.com/gin-gonic/gin"
-	// "github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+
 )
 
 var db *sql.DB
@@ -28,9 +28,9 @@ func logRequestMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-    // if err := godotenv.Load(); err != nil {
-    //     log.Fatal("Erro carregando .env")
-    // }
+    if err := godotenv.Load(); err != nil {
+        log.Fatal("Erro carregando .env")
+    }
 
     connStr := "user=postgres.okeyrotrinjopdjpupym password=BioCasa7735 host=aws-0-sa-east-1.pooler.supabase.com port=5432 dbname=postgres"
 
