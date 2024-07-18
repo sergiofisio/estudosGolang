@@ -1,119 +1,29 @@
 package main
 
 import (
-	"database/sql"
+	"estudargolang/controllers"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	// "webserver/controller"
-	"webserver/database"
-	// "webserver/middleware"
-
-	"github.com/fatih/color"
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
-	"github.com/prest/config"
-	"github.com/prest/middlewares"
-	"github.com/urfave/negroni"
 
 )
-
-var db *sql.DB
-
-func logRequestMiddleware() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        url := c.Request.URL.Scheme + "://" + c.Request.Host + c.Request.RequestURI
-        fmt.Printf("url: %s\n", url)
-        fmt.Printf("metodo: %s\n", c.Request.Method)
-        c.Next()
-    }
-}
-
-var (
-	pgUser     string
-	pgHost     string
-	pgPass     string
-	pgDatabase string
-	port       string
-	sslMode    string
-
-	sentryDSN string
-
-	profile string
-)
-
-const AppVersion = "0.1.14"
-
-func init() {
-	fmt.Println("--------------------")
-	fmt.Println(AppVersion)
-	fmt.Println("--------------------")
-
-	err := godotenv.Load()
-	if err != nil {
-		color.Yellow("Error loading .env file")
-		log.Println(err)
-	}
-	pgUser = os.Getenv("PG_USER")
-	pgHost = os.Getenv("PG_HOST")
-	pgPass = os.Getenv("PG_PASS")
-	pgDatabase = os.Getenv("PG_DATABASE")
-	port = os.Getenv("PORT")
-}
 
 func main() {
-
-    connStr := "user=postgres.okeyrotrinjopdjpupym password=BioCasa7735 host=aws-0-sa-east-1.pooler.supabase.com port=5432 dbname=postgres"
-
-    var err error
-    db, err = sql.Open("postgres", connStr)
-    if err != nil {
-        log.Fatal(err)
-    }
-    // defer db.Close()
-
-    err = db.Ping()
-    if err != nil {
-        log.Fatal("Erro ao conectar ao banco de dados:", err)
-    }
-
-    if port == "" {
-        port = "4000"
-    }
-
-    database.CreateTables(db)
-
-    n := negroni.Classic()
-	n.Use(middlewares.Cors(config.PrestConf.CORSAllowOrigin, config.PrestConf.CORSAllowHeaders))
-
-    r := gin.Default()
-    r.Use(logRequestMiddleware())
-
-    r.GET("/", func(c *gin.Context) {
-        c.String(http.StatusOK, "Servidor Iniciado")
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Rota chamada: %s", r.URL.Path)
+        fmt.Fprintln(w, "Servidor iniciado e rodando!")
     })
 
-    // r.POST("/register", func(c *gin.Context) {
-    //     controller.RegisterHandler(c.Writer, c.Request, db)
-    // })
+	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+        log.Printf("Rota chamada: %s", r.URL.Path)
+        controllers.Register(w, r)
+    })
 
-    // r.POST("/login", func(c *gin.Context) {
-    //     controller.LoginHandler(c.Writer, c.Request, db)
-    // })
+    http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+        log.Printf("Rota chamada: %s", r.URL.Path)
+        controllers.Login(w, r)
+    })
 
-    // authGroup := r.Group("/")
-    // authGroup.Use(middleware.Authenticate())
-    // {
-    //     authGroup.PUT("/update/:id", func(c *gin.Context) {
-    //         controller.UpdateHandler(c.Writer, c.Request, db)
-    //     })
-
-    //     authGroup.DELETE("/delete/:id", func(c *gin.Context) {
-    //         controller.DeleteHandler(c.Writer, c.Request, db)
-    //     })
-    // }
-
-    color.Yellow("Servidor iniciado na porta %s...\n", port)
+    log.Println("Server started on :8080")
+    log.Fatal(http.ListenAndServe(":8080", nil))
 }
