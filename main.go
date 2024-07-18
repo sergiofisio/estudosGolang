@@ -6,14 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
-
 	// "webserver/controller"
-	// "webserver/database"
+	"webserver/database"
 	// "webserver/middleware"
 
 	"github.com/gin-gonic/gin"
 	// "github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+
 )
 
 var db *sql.DB
@@ -32,19 +32,19 @@ func main() {
     //     log.Fatal("Erro carregando .env")
     // }
 
-    // connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
-    // os.Getenv("DB_USER"),
-    // os.Getenv("DB_PASSWORD"),
-    // os.Getenv("DB_HOST"),
-    // os.Getenv("DB_PORT"),
-    // os.Getenv("DB_NAME"))
+    connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
+    os.Getenv("DB_USER"),
+    os.Getenv("DB_PASSWORD"),
+    os.Getenv("DB_HOST"),
+    os.Getenv("DB_PORT"),
+    os.Getenv("DB_NAME"))
 
-    // var err error
-    // db, err = sql.Open("postgres", connStr)
-    // if err != nil {
-    //     log.Fatal(err)
-    // }
-    // defer db.Close()
+    var err error
+    db, err = sql.Open("postgres", connStr)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer db.Close()
 
     // err = db.Ping()
     // if err != nil {
@@ -56,7 +56,7 @@ func main() {
         port = "4000"
     }
 
-    // database.CreateTables(db)
+    database.CreateTables(db)
 
     r := gin.Default()
     r.Use(logRequestMiddleware())
