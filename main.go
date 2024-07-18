@@ -8,12 +8,12 @@ import (
 	"os"
 	"webserver/controller"
 	"webserver/database"
-	"webserver/middleware"
+
+	// "webserver/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-
 )
 
 var db *sql.DB
@@ -69,21 +69,21 @@ func main() {
         controller.RegisterHandler(c.Writer, c.Request, db)
     })
 
-    r.POST("/login", func(c *gin.Context) {
-        controller.LoginHandler(c.Writer, c.Request, db)
-    })
+    // r.POST("/login", func(c *gin.Context) {
+    //     controller.LoginHandler(c.Writer, c.Request, db)
+    // })
 
-    authGroup := r.Group("/")
-    authGroup.Use(middleware.Authenticate())
-    {
-        authGroup.PUT("/update/:id", func(c *gin.Context) {
-            controller.UpdateHandler(c.Writer, c.Request, db)
-        })
+    // authGroup := r.Group("/")
+    // authGroup.Use(middleware.Authenticate())
+    // {
+    //     authGroup.PUT("/update/:id", func(c *gin.Context) {
+    //         controller.UpdateHandler(c.Writer, c.Request, db)
+    //     })
 
-        authGroup.DELETE("/delete/:id", func(c *gin.Context) {
-            controller.DeleteHandler(c.Writer, c.Request, db)
-        })
-    }
+    //     authGroup.DELETE("/delete/:id", func(c *gin.Context) {
+    //         controller.DeleteHandler(c.Writer, c.Request, db)
+    //     })
+    // }
 
     fmt.Printf("Servidor iniciado na porta %s...\n", port)
     if err := r.Run(":" + port); err != nil {
