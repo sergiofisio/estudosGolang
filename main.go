@@ -12,7 +12,7 @@ import (
 	// "webserver/middleware"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -28,9 +28,9 @@ func logRequestMiddleware() gin.HandlerFunc {
 }
 
 func main() {
-    if err := godotenv.Load(); err != nil {
-        log.Fatal("Erro carregando .env")
-    }
+    // if err := godotenv.Load(); err != nil {
+    //     log.Fatal("Erro carregando .env")
+    // }
 
     // connStr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
     // os.Getenv("DB_USER"),

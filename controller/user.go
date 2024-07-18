@@ -1,20 +1,19 @@
 package controller
 
 import (
-	"database/sql"
-	"encoding/json"
-
+	// "database/sql"
+	// "encoding/json"
 	// "fmt"
 	"log"
-	"net/http"
+	// "net/http"
 	"os"
-
 	// "strings"
-	"webserver/function"
-	"webserver/models"
+	// "webserver/function"
+	// "webserver/models"
 
 	// "github.com/gorilla/mux"
-	"golang.org/x/crypto/bcrypt"
+	// "golang.org/x/crypto/bcrypt"
+
 )
 
 func setupLogger() {
@@ -30,70 +29,70 @@ func init() {
     setupLogger()
 }
 
-func RegisterHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-    var user models.User
-    if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-        function.LogError(w, "RegisterHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
-        return
-    }
+// func RegisterHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+//     var user models.User
+//     if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+//         function.LogError(w, "RegisterHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
+//         return
+//     }
 
-    if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost); err != nil {
-        function.LogError(w, "RegisterHandler", "Erro ao encriptar a senha", err, http.StatusBadRequest)
-    } else {
-        user.Password = string(hashedPassword)
-        if err := function.SaveUser(db, user.Name, user.Email, user.Document, user.Username, user.Password); err != nil {
-            function.LogError(w, "RegisterHandler", "Erro ao salvar o usuário no banco de dados", err, http.StatusBadRequest)
-            return
-        }
+//     if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost); err != nil {
+//         function.LogError(w, "RegisterHandler", "Erro ao encriptar a senha", err, http.StatusBadRequest)
+//     } else {
+//         user.Password = string(hashedPassword)
+//         if err := function.SaveUser(db, user.Name, user.Email, user.Document, user.Username, user.Password); err != nil {
+//             function.LogError(w, "RegisterHandler", "Erro ao salvar o usuário no banco de dados", err, http.StatusBadRequest)
+//             return
+//         }
 
-        user.Password = ""
-        function.SendJSONResponse(w, http.StatusCreated, struct {
-            User    models.User `json:"user"`
-            Message string      `json:"message"`
-        }{
-            User:    user,
-            Message: "Usuário registrado com sucesso",
-        })
-    }
-}
+//         user.Password = ""
+//         function.SendJSONResponse(w, http.StatusCreated, struct {
+//             User    models.User `json:"user"`
+//             Message string      `json:"message"`
+//         }{
+//             User:    user,
+//             Message: "Usuário registrado com sucesso",
+//         })
+//     }
+// }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-    var loginDetails struct {
-        UsernameOrEmail string `json:"usernameOrEmail"`
-        Password        string `json:"password"`
-    }
+// func LoginHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+//     var loginDetails struct {
+//         UsernameOrEmail string `json:"usernameOrEmail"`
+//         Password        string `json:"password"`
+//     }
 
-    if err := json.NewDecoder(r.Body).Decode(&loginDetails); err != nil {
-        function.LogError(w, "LoginHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
-        return
-    }
+//     if err := json.NewDecoder(r.Body).Decode(&loginDetails); err != nil {
+//         function.LogError(w, "LoginHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
+//         return
+//     }
 
-    var user models.User
-    if err := db.QueryRow(`SELECT id, name, email, document, username, password FROM users WHERE username = $1 OR email = $1`, loginDetails.UsernameOrEmail).Scan(&user.ID, &user.Name, &user.Email, &user.Document, &user.Username, &user.Password); err != nil {
-        function.LogError(w, "LoginHandler", "Usuário não encontrado", err, http.StatusBadRequest)
-        return
-    }
+//     var user models.User
+//     if err := db.QueryRow(`SELECT id, name, email, document, username, password FROM users WHERE username = $1 OR email = $1`, loginDetails.UsernameOrEmail).Scan(&user.ID, &user.Name, &user.Email, &user.Document, &user.Username, &user.Password); err != nil {
+//         function.LogError(w, "LoginHandler", "Usuário não encontrado", err, http.StatusBadRequest)
+//         return
+//     }
 
-    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginDetails.Password)); err != nil {
-        function.LogError(w, "LoginHandler", "Senha inválida", err, http.StatusBadRequest)
-        return
-    }
+//     if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginDetails.Password)); err != nil {
+//         function.LogError(w, "LoginHandler", "Senha inválida", err, http.StatusBadRequest)
+//         return
+//     }
 
-    tokenString, err := function.GenerateJWTToken(user.Email)
-    if err != nil {
-        function.LogError(w, "LoginHandler", "Erro ao gerar o token", err, http.StatusBadRequest)
-        return
-    }
+//     tokenString, err := function.GenerateJWTToken(user.Email)
+//     if err != nil {
+//         function.LogError(w, "LoginHandler", "Erro ao gerar o token", err, http.StatusBadRequest)
+//         return
+//     }
 
-    user.Password = ""
-    function.SendJSONResponse(w, http.StatusOK, struct {
-        User  models.User `json:"user"`
-        Token string      `json:"token"`
-    }{
-        User:  user,
-        Token: tokenString,
-    })
-}
+//     user.Password = ""
+//     function.SendJSONResponse(w, http.StatusOK, struct {
+//         User  models.User `json:"user"`
+//         Token string      `json:"token"`
+//     }{
+//         User:  user,
+//         Token: tokenString,
+//     })
+// }
 
 // func UpdateHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 //     vars := mux.Vars(r)
