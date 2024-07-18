@@ -8,90 +8,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
-    "time"
+	"webserver/function"
+	"webserver/models"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 
 )
-
-type User struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Document string `json:"document"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type Address struct {
-	Street       string `json:"street"`
-	Number       int    `json:"number"`
-	Complement   string `json:"complement"`
-	Neighborhood string `json:"neighborhood"`
-	City         string `json:"city"`
-	State        string `json:"state"`
-	Country      string `json:"country"`
-	ZipCode      string `json:"zip_code"`
-}
-
-type Phone struct {
-	PhoneType   string `json:"phone_type"`
-	CountryCode string `json:"country_code"`
-	AreaCode    string `json:"area_code"`
-	PhoneNumber string `json:"phone_number"`
-}
-
-type Purchase struct {
-	ProductName  string  `json:"product_name"`
-	Amount       float64 `json:"amount"`
-	PurchaseDate string  `json:"purchase_date"`
-}
-
-var jwtKey = []byte(os.Getenv("JWT_SECRET_KEY"))
-
-func SaveUser(db *sql.DB, name, email, document, username, password string) error {
-    query := `INSERT INTO users (name, email, document, username, password) VALUES ($1, $2, $3, $4, $5)`
-
-    _, err := db.Exec(query, name, email, document, username, password)
-    if err != nil {
-        log.Printf("Erro ao inserir o usuário no banco de dados: %v", err)
-        return err
-    }
-
-    return nil
-}
-
-func LogError(w http.ResponseWriter, functionName, message string, err error, statusCode int) {
-    log.Printf("[%s] %s: %v\n", functionName, message, err)
-    http.Error(w, message, statusCode)
-}
-
-func GenerateJWTToken(userEmail string) (string, error) {
-    claims := &jwt.StandardClaims{
-        Subject:   userEmail,
-        ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
-    }
-
-    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    tokenString, err := token.SignedString(jwtKey)
-
-    if err != nil {
-        return "", err
-    }
-
-    return tokenString, nil
-}
-
-func SendJSONResponse(w http.ResponseWriter, statusCode int, payload interface{}) {
-    w.WriteHeader(statusCode)
-    w.Header().Set("Content-Type", "application/json")
-    
-    if err := json.NewEncoder(w).Encode(payload); err != nil {
-        LogError(w, "sendJSONResponse", "Erro ao codificar a resposta", err, http.StatusBadRequest)
-    }
-}
 
 func setupLogger() {
     logFile, err := os.OpenFile("errors.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -107,24 +30,24 @@ func init() {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-    var user User
+    var user models.User
     if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-        LogError(w, "RegisterHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
+        function.LogError(w, "RegisterHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
         return
     }
 
     if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost); err != nil {
-        LogError(w, "RegisterHandler", "Erro ao encriptar a senha", err, http.StatusBadRequest)
+        function.LogError(w, "RegisterHandler", "Erro ao encriptar a senha", err, http.StatusBadRequest)
     } else {
         user.Password = string(hashedPassword)
-        if err := SaveUser(db, user.Name, user.Email, user.Document, user.Username, user.Password); err != nil {
-            LogError(w, "RegisterHandler", "Erro ao salvar o usuário no banco de dados", err, http.StatusBadRequest)
+        if err := function.SaveUser(db, user.Name, user.Email, user.Document, user.Username, user.Password); err != nil {
+            function.LogError(w, "RegisterHandler", "Erro ao salvar o usuário no banco de dados", err, http.StatusBadRequest)
             return
         }
 
         user.Password = ""
-        SendJSONResponse(w, http.StatusCreated, struct {
-            User    User `json:"user"`
+        function.SendJSONResponse(w, http.StatusCreated, struct {
+            User    models.User `json:"user"`
             Message string      `json:"message"`
         }{
             User:    user,
@@ -140,30 +63,30 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     }
 
     if err := json.NewDecoder(r.Body).Decode(&loginDetails); err != nil {
-        LogError(w, "LoginHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
+        function.LogError(w, "LoginHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
         return
     }
 
-    var user User
+    var user models.User
     if err := db.QueryRow(`SELECT id, name, email, document, username, password FROM users WHERE username = $1 OR email = $1`, loginDetails.UsernameOrEmail).Scan(&user.ID, &user.Name, &user.Email, &user.Document, &user.Username, &user.Password); err != nil {
-        LogError(w, "LoginHandler", "Usuário não encontrado", err, http.StatusBadRequest)
+        function.LogError(w, "LoginHandler", "Usuário não encontrado", err, http.StatusBadRequest)
         return
     }
 
     if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginDetails.Password)); err != nil {
-        LogError(w, "LoginHandler", "Senha inválida", err, http.StatusBadRequest)
+        function.LogError(w, "LoginHandler", "Senha inválida", err, http.StatusBadRequest)
         return
     }
 
-    tokenString, err := GenerateJWTToken(user.Email)
+    tokenString, err := function.GenerateJWTToken(user.Email)
     if err != nil {
-        LogError(w, "LoginHandler", "Erro ao gerar o token", err, http.StatusBadRequest)
+        function.LogError(w, "LoginHandler", "Erro ao gerar o token", err, http.StatusBadRequest)
         return
     }
 
     user.Password = ""
-    SendJSONResponse(w, http.StatusOK, struct {
-        User  User `json:"user"`
+    function.SendJSONResponse(w, http.StatusOK, struct {
+        User  models.User `json:"user"`
         Token string      `json:"token"`
     }{
         User:  user,
@@ -177,20 +100,20 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
     print(userID)
 
-    var user User
+    var user models.User
     if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-        LogError(w, "UpdateHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
+        function.LogError(w, "UpdateHandler", "Erro ao decodificar o corpo da requisição", err, http.StatusBadRequest)
         return
     }
 
     var exists bool
     err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)", userID).Scan(&exists)
     if err != nil {
-        LogError(w, "UpdateHandler", "Erro ao verificar a existência do usuário", err, http.StatusInternalServerError)
+        function.LogError(w, "UpdateHandler", "Erro ao verificar a existência do usuário", err, http.StatusInternalServerError)
         return
     }
     if !exists {
-        SendJSONResponse(w, http.StatusNotFound, "Usuário não encontrado")
+        function.SendJSONResponse(w, http.StatusNotFound, "Usuário não encontrado")
         return
     }
 
@@ -226,7 +149,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     if user.Password != "" {
         hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
         if err != nil {
-            LogError(w, "UpdateHandler", "Erro ao encriptar a senha", err, http.StatusInternalServerError)
+            function.LogError(w, "UpdateHandler", "Erro ao encriptar a senha", err, http.StatusInternalServerError)
             return
         }
         updates = append(updates, fmt.Sprintf("password = $%d", argID))
@@ -235,7 +158,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     }
 
     if len(updates) == 0 {
-        SendJSONResponse(w, http.StatusBadRequest, "Nenhum campo para atualizar")
+        function.SendJSONResponse(w, http.StatusBadRequest, "Nenhum campo para atualizar")
         return
     }
 
@@ -245,11 +168,11 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
     _, err = db.Exec(query, args...)
     if err != nil {
-        LogError(w, "UpdateHandler", "Erro ao atualizar o usuário no banco de dados", err, http.StatusInternalServerError)
+        function.LogError(w, "UpdateHandler", "Erro ao atualizar o usuário no banco de dados", err, http.StatusInternalServerError)
         return
     }
 
-    SendJSONResponse(w, http.StatusOK, "Usuário atualizado com sucesso")
+    function.SendJSONResponse(w, http.StatusOK, "Usuário atualizado com sucesso")
 }
 
 func DeleteHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
