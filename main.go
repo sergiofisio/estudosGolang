@@ -13,6 +13,7 @@ import (
 	"github.com/sergiofisio/estudosGolang/controller"
 	"github.com/sergiofisio/estudosGolang/database"
 	"github.com/sergiofisio/estudosGolang/middleware"
+
 )
 
 var db *sql.DB
