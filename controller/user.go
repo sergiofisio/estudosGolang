@@ -13,7 +13,6 @@ import (
 	"github.com/sergiofisio/estudosGolang/function"
 	"github.com/sergiofisio/estudosGolang/models"
 	"golang.org/x/crypto/bcrypt"
-
 )
 
 func setupLogger() {
@@ -97,6 +96,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 func UpdateHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
     vars := mux.Vars(r)
     userID := vars["id"]
+
+    print(userID)
 
     var user models.User
     if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
