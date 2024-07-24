@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
-
 )
 
 var db *sql.DB
@@ -22,10 +22,6 @@ func init() {
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
-    if r.Method != "POST" {
-        http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
-        return
-    }
 
     var user models.User
     err := json.NewDecoder(r.Body).Decode(&user)
@@ -34,7 +30,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Verificar se o usuário já existe no banco de dados
     var exists bool
     err = db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", user.Email).Scan(&exists)
     if err != nil {
@@ -63,10 +58,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-    if r.Method != "POST" {
-        http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
-        return
-    }
 
     var loginDetails struct {
         Username string `json:"username"`
@@ -126,4 +117,41 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(response)
+}
+
+func Update(w http.ResponseWriter, r *http.Request) {
+
+    vars := mux.Vars(r)
+    id := vars["id"]
+
+    var user models.User
+    err := json.NewDecoder(r.Body).Decode(&user)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    _, err = db.Exec("UPDATE users SET name = $1, email = $2, document = $3, username = $4, password = $5 WHERE id = $6", user.Name, user.Email, user.Document, user.Username, user.Password, id)
+    if err != nil {
+        http.Error(w, "Failed to update user", http.StatusInternalServerError)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+    fmt.Fprintln(w, "User updated successfully")
+}
+
+func Delete(w http.ResponseWriter, r *http.Request) {
+
+    vars := mux.Vars(r)
+    id := vars["id"]
+
+    _, err := db.Exec("DELETE FROM users WHERE id = $1", id)
+    if err != nil {
+        http.Error(w, "Failed to delete user", http.StatusInternalServerError)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+    fmt.Fprintln(w, "User deleted successfully")
 }
